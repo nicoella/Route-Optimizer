@@ -1,3 +1,5 @@
 programs
 output.txt
-run.sh
+c_cpp_properties.json
+build
+run_noCMake.sh
