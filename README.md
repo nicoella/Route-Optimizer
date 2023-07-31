@@ -6,10 +6,22 @@ A modified version of the Held-Karp algorithm to solve a modified Traveling Sale
 
 Make sure Boost.Beast and CMake are installed.
 
+## Backend
+
 Build and run the server:
 
 ```
 $ cd backend
 $ chmod +x run.sh
 $ ./run.sh
+```
+
+## Frontend
+
+Run the frontend:
+
+```
+$ cd frontend
+$ npm install
+$ npm run serve
 ```
