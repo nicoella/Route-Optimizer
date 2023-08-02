@@ -29,6 +29,7 @@
         </div>
       </div>
       <div class="right">
+        <h2>Please reload the page to load the map.</h2>
         <div ref="mapContainer" class="map-container">
           <div ref="map" style="width: 100%; height: 100%"></div>
         </div>
@@ -143,11 +144,25 @@ p {
   width: 50%;
   height: 400px;
   margin-left: auto;
-  background-color: blue;
+  background-color: #fafafa;
+  position: relative;
+}
+
+.right h2 {
+  text-align: center;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 99999;
 }
 
 .map-container {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: 100%;
   height: 100%;
+  z-index: 9999;
 }
 </style>
