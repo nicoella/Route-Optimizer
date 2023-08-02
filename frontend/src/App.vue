@@ -1,25 +1,32 @@
 <template>
-  <HelloWorld msg="Welcome to Your Vue.js App" />
+  <HomePage />
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
+import HomePage from "./components/HomePage.vue";
 
 export default {
   name: "App",
   components: {
-    HelloWorld,
+    HomePage,
   },
 };
 </script>
 
 <style>
+:root {
+  --grey-dark: #1f1f1f;
+  --grey-med: #2d2d2d;
+  --grey-light: #7f7f7f;
+}
+
 #app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen,
+    Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
-  color: #2c3e50;
+  color: black;
   margin-top: 60px;
 }
 </style>

@@ -3,3 +3,5 @@ output.txt
 .vscode
 build
 run_noCMake.sh
+config.json
+node_modules
