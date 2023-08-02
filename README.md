@@ -18,10 +18,19 @@ $ ./run.sh
 
 ## Frontend
 
+Setup the frontend (first time):
+
+```
+cd frontend
+chmod +x setup.sh
+./setup.sh
+```
+
+Update your Google Cloud API key in `frontend/src/config.json`.
+
 Run the frontend:
 
 ```
 $ cd frontend
-$ npm install
 $ npm run serve
 ```
