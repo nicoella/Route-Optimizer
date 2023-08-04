@@ -1,15 +1,19 @@
 <template>
-  <div class="search-field">
-    <h2>{{ titleVal }}</h2>
-    <div class="search-bar">
+  <div class="input-field">
+    <h2 v-if="titleVal != ''">{{ titleVal }}</h2>
+    <div class="input-bar">
       <input
         ref="inputField"
         type="text"
         v-model="contentVal"
         @focus="handleContentFocus"
         @input="handleContentChange"
+        :style="{
+          'padding-right': isSearchVal ? '20px' : '5px',
+        }"
       />
       <font-awesome-icon
+        v-if="isSearch"
         class="search-icon"
         icon="fa-solid fa-magnifying-glass"
       />
@@ -19,17 +23,19 @@
 
 <script>
 export default {
-  name: "SearchField",
+  name: "InputField",
 
   props: {
     title: String,
     content: String,
+    isSearch: Boolean,
   },
 
   data() {
     return {
       titleVal: this.title,
       contentVal: this.content,
+      isSearchVal: this.isSearch,
       firstClick: true,
     };
   },
@@ -37,11 +43,14 @@ export default {
   methods: {
     updateTextColour() {
       const inputField = this.$refs.inputField;
-      if (inputField) {
+      if (!this.firstClick) {
         inputField.style.color = "var(--grey-med)";
+      } else {
+        inputField.style.color = "var(--grey-light)";
       }
     },
     handleContentChange() {
+      this.$emit("update:content", this.contentVal);
       this.updateTextColour();
     },
     handleContentFocus() {
@@ -49,39 +58,18 @@ export default {
         this.contentVal = "";
         this.firstClick = false;
       }
+      this.updateTextColour();
+    },
+    clear() {
+      this.firstClick = true;
+      this.contentVal = "Search";
+      this.$emit("update:content", this.contentVal);
+      this.updateTextColour();
     },
   },
 };
 </script>
 
-<style>
-.search-field {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  width: calc(100% - 10px);
-  margin-right: 10px;
-}
-
-.search-bar {
-  display: flex;
-  width: 100%;
-}
-
-.search-bar input {
-  height: 22px;
-  width: 100%;
-  padding-right: 20px;
-  padding-left: 5px;
-  flex: 1;
-  color: var(--grey-light);
-  box-sizing: border-box;
-  font-size: 12px;
-}
-
-.search-bar .search-icon {
-  color: var(--grey-med);
-  font-size: 0.75rem;
-  transform: translateX(-150%) translateY(55%);
-}
+<style lang="scss">
+@import "./InputField.scss";
 </style>

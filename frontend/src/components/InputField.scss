@@ -1,0 +1,29 @@
+.input-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  width: calc(100% - 10px);
+  margin-right: 10px;
+}
+
+.input-bar {
+  display: flex;
+  width: 100%;
+
+  input {
+    height: 22px;
+    width: 100%;
+    padding-right: 20px;
+    padding-left: 5px;
+    flex: 1;
+    color: var(--grey-light);
+    box-sizing: border-box;
+    font-size: 12px;
+  }
+
+  .search-icon {
+    color: var(--grey-med);
+    font-size: 0.75rem;
+    transform: translateX(-150%) translateY(55%);
+  }
+}

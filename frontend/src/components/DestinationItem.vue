@@ -29,23 +29,6 @@ export default {
 };
 </script>
 
-<style>
-.destination-item {
-  display: flex;
-  text-align: left;
-}
-
-.destination-item p {
-  width: 30%;
-  margin-top: 0;
-  padding-top: 2px;
-}
-
-.destination-item li {
-  display: block;
-  color: var(--grey-med);
-  font-size: 14px;
-  font-weight: 400;
-  padding: 2px;
-}
+<style lang="scss">
+@import "./DestinationItem.scss";
 </style>

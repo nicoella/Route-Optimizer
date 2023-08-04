@@ -1,0 +1,19 @@
+.destination-item {
+  display: flex;
+  text-align: left;
+  padding-bottom: 10px;
+
+  p {
+    width: 30%;
+    margin-top: 0;
+    padding-top: 2px;
+  }
+
+  li {
+    display: block;
+    color: var(--grey-med);
+    font-size: 14px;
+    font-weight: 400;
+    padding: 2px;
+  }
+}
