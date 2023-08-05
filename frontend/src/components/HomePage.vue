@@ -59,9 +59,10 @@
           </div>
           <div class="add-bottom">
             <destination-item
-              v-if="newDestination != []"
+              v-if="newDestination.name"
               :destination="newDestination.name"
               :options="newDestination.locations"
+              :key="newDestination.id"
             />
             <div class="add-buttons">
               <button @click="addDestination" class="add-button">Add</button>
@@ -180,8 +181,18 @@ export default {
       this.$refs.destinationNameRef.clear();
       this.$refs.destinationSearchRef.clear();
     },
-    addDestination() {},
+    addDestination() {
+      this.destinations.push({
+        id: this.destinations.length,
+        name: this.destinationName,
+        numLocs: this.newDestination.numLocs,
+        locations: this.newDestination.locations,
+      });
+      this.cancelDestination();
+    },
     cancelDestination() {
+      this.$refs.destinationNameRef.clear();
+      this.$refs.destinationSearchRef.clear();
       this.newDestination = [];
     },
 
@@ -195,7 +206,6 @@ export default {
       } else if (topic === "destinationSearch") {
         this.destinationSearch = event;
       }
-      //console.log(this.startingLocation);
     },
   },
 };
