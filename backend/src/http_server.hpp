@@ -34,16 +34,7 @@ void handle_request(http::request<http::string_body>& req, http::response<http::
 
                     // parsing
                     string_view_converter target = req.target();
-                    std::size_t query_start = std::string_view(target.data, target.size).find('?');
-                    std::string_view query_string = std::string_view(target.data + query_start + 1, target.size - query_start - 1);
-                    std::vector<std::string_view> param_pairs;
-
-                    size_t start_pos = 0;
-                    while (start_pos != std::string_view::npos) {
-                        size_t end_pos = query_string.find('&', start_pos);
-                        param_pairs.push_back(query_string.substr(start_pos, end_pos - start_pos));
-                        start_pos = (end_pos == std::string_view::npos) ? end_pos : end_pos + 1;
-                    }
+                    std::vector<std::string_view> param_pairs = param_parser(target);
 
                     for (const auto& param_pair : param_pairs) {
                         size_t equal_pos = param_pair.find('=');
@@ -76,18 +67,14 @@ void handle_request(http::request<http::string_body>& req, http::response<http::
                     res.prepare_payload();
                     return;
                 } 
-                res.result(http::status::ok);
-                res.set(http::field::content_type, "text/plain");
-                res.body() = "{\"status\", \"BAD\"}";
-                res.prepare_payload();
-                return;
             }  catch (std::exception const& e) {
-                res.result(http::status::ok);
-                res.set(http::field::content_type, "text/plain");
-                res.body() = "{\"status\", \"BAD\"}";
-                res.prepare_payload();
-                return;
+                std::cerr << "Error: " << e.what() << std::endl;
             }
+            res.result(http::status::ok);
+            res.set(http::field::content_type, "text/plain");
+            res.body() = "{\"status\", \"BAD\"}";
+            res.prepare_payload();
+            return;
         }
     } else if (req.method() == http::verb::post) { // handle POST requests
         if (req.target() == "/test") {
