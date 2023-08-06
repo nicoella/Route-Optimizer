@@ -12,6 +12,11 @@
           'padding-right': isSearchVal ? '20px' : '5px',
         }"
       />
+      <place-dropdown
+        ref="dropdown"
+        v-if="isSearchVal"
+        :searchText="contentVal"
+      />
       <font-awesome-icon
         v-if="isSearch"
         class="search-icon"
@@ -22,8 +27,14 @@
 </template>
 
 <script>
+import PlaceDropdown from "./PlaceDropdown.vue";
+
 export default {
   name: "InputField",
+
+  components: {
+    PlaceDropdown,
+  },
 
   props: {
     title: String,
@@ -59,12 +70,18 @@ export default {
         this.firstClick = false;
       }
       this.updateTextColour();
+      this.$refs.dropdown.searchPlaces(this.contentVal);
     },
     clear() {
       this.firstClick = true;
       this.contentVal = "Search";
       this.$emit("update:content", this.contentVal);
       this.updateTextColour();
+    },
+    handlePlaceSelection(place) {
+      this.contentVal = place.name;
+      this.$emit("update:content", this.contentVal);
+      this.firstClick = false;
     },
   },
 };

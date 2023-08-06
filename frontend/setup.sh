@@ -8,8 +8,8 @@
 
 npm install
 
-touch src/config.json
+touch config.json
 echo '{
   "API_KEY": "[your api key here]"
 }
-' > src/config.json
+' > config.json

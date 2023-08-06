@@ -91,7 +91,7 @@
 <script>
 import InputField from "./InputField.vue";
 import DestinationItem from "./DestinationItem.vue";
-import config from "../config.json";
+import config from "../../config.json";
 
 export default {
   name: "HomePage",

@@ -8,6 +8,8 @@ Make sure Boost.Beast and CMake are installed.
 
 ## Backend
 
+Update CMakeLists.txt with file paths (if necessary).
+
 Build and run the server:
 
 ```
