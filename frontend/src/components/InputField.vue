@@ -77,8 +77,6 @@ export default {
     searchContent() {
       if (this.isSearchVal && this.contentVal != this.prevSearch) {
         if (this.title == "") {
-          console.log(this.midpoint);
-          console.log(this.radius);
           this.$refs.dropdown.searchPlaces(
             {
               query: this.contentVal,
@@ -98,9 +96,11 @@ export default {
       }
     },
     updatePlaceSelected() {
-      this.placeSelected = this.$refs.dropdown.placeSelected;
-      this.selectedPlaces = this.$refs.dropdown.selectedPlaces;
-      this.$emit("update:selected", this.placeSelected);
+      if (this.isSearchVal) {
+        this.placeSelected = this.$refs.dropdown.placeSelected;
+        this.selectedPlaces = this.$refs.dropdown.selectedPlaces;
+        this.$emit("update:selected", this.placeSelected);
+      }
     },
     handleContentChange() {
       this.updatePlaceSelected();

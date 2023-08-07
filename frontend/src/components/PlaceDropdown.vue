@@ -82,8 +82,6 @@ export default {
             console.error(error);
           });
       } else if (this.type == "text_search") {
-        console.log("hello?? ");
-        console.log(input.midpoint);
         key =
           "/api/text_search?query=" +
           input.query +
@@ -95,7 +93,6 @@ export default {
           input.radius +
           "&api_key=" +
           this.getApiKey();
-        console.log(key);
         axios
           .get(key)
           .then((response) => {
@@ -119,12 +116,10 @@ export default {
                   selected: false,
                 });
               }
-              console.log(this.places);
               this.places.sort((a, b) => a.distance - b.distance);
               this.places.forEach((place, index) => {
                 place.id = index;
               });
-              console.log(this.places);
             } else {
               this.places = [];
             }

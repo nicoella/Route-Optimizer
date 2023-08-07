@@ -121,7 +121,9 @@ export default {
       endingLocation: "Search",
       destinationName: "Destination Name",
       destinationSearch: "Search Potential Locations",
-      markers: [],
+      startingMarker: [],
+      endingMarker: [],
+      destinationMarkers: [],
       markerPositions: [],
       map: Object,
       destinations: [
@@ -191,16 +193,15 @@ export default {
         document.head.appendChild(script);
       }
     },
-    addMarkers(places) {
+    addMarkers(places, markerObject) {
       places.forEach((placeInfo) => {
-        console.log(placeInfo);
         const position = { lat: placeInfo.lat, lng: placeInfo.lng };
         const marker = new window.google.maps.Marker({
           position: position,
           map: this.map,
           title: placeInfo.name,
         });
-        this.markers.push({ marker: marker });
+        markerObject.push({ marker: marker });
         this.markerPositions.push(position);
       });
       const bounds = new window.google.maps.LatLngBounds();
@@ -210,6 +211,14 @@ export default {
         );
       });
       this.map.fitBounds(bounds);
+    },
+    removeMarkers(markers) {
+      markers.forEach((marker) => {
+        marker.marker.setVisible(false);
+        marker.marker.setMap(null);
+        marker.marker = null;
+      });
+      markers.length = 0;
     },
     calculateClick() {},
     clearClick() {
@@ -236,31 +245,45 @@ export default {
       this.newDestination = {};
     },
     updateSelected() {
-      if (this.$refs.startingLocRef.placeSelected && !this.markers[0]) {
-        this.addMarkers([
-          {
-            name: this.$refs.startingLocRef.selectedPlaces[0].name,
-            lat: this.$refs.startingLocRef.selectedPlaces[0].latitude,
-            lng: this.$refs.startingLocRef.selectedPlaces[0].longitude,
-          },
-        ]);
-        console.log("add start marker");
-      } else if (!this.$refs.startingLocRef.placeSelected && this.markers[0]) {
-        //this.markers[0].setMap(null);
-        //this.markers.splice(index, 0);
+      if (
+        this.$refs.startingLocRef.placeSelected &&
+        this.startingMarker.length == 0
+      ) {
+        this.addMarkers(
+          [
+            {
+              name: this.$refs.startingLocRef.selectedPlaces[0].name,
+              lat: this.$refs.startingLocRef.selectedPlaces[0].latitude,
+              lng: this.$refs.startingLocRef.selectedPlaces[0].longitude,
+            },
+          ],
+          this.startingMarker
+        );
+      } else if (
+        !this.$refs.startingLocRef.placeSelected &&
+        this.startingMarker.length != 0
+      ) {
+        this.removeMarkers(this.startingMarker);
       }
-      if (this.$refs.endingLocRef.placeSelected && !this.markers[1]) {
-        this.addMarkers([
-          {
-            name: this.$refs.endingLocRef.selectedPlaces[0].name,
-            lat: this.$refs.endingLocRef.selectedPlaces[0].latitude,
-            lng: this.$refs.endingLocRef.selectedPlaces[0].longitude,
-          },
-        ]);
-        console.log("add end marker");
-      } else if (!this.$refs.endingLocRef.placeSelected && this.markers[1]) {
-        //this.markers[1].setMap(null);
-        //this.markers.splice(index, 1);
+      if (
+        this.$refs.endingLocRef.placeSelected &&
+        this.endingMarker.length == 0
+      ) {
+        this.addMarkers(
+          [
+            {
+              name: this.$refs.endingLocRef.selectedPlaces[0].name,
+              lat: this.$refs.endingLocRef.selectedPlaces[0].latitude,
+              lng: this.$refs.endingLocRef.selectedPlaces[0].longitude,
+            },
+          ],
+          this.endingMarker
+        );
+      } else if (
+        !this.$refs.endingLocRef.placeSelected &&
+        this.endingMarker.length != 0
+      ) {
+        this.removeMarkers(this.endingMarker);
       }
       if (
         this.$refs.startingLocRef.placeSelected &&
@@ -272,7 +295,6 @@ export default {
         const startLng = this.$refs.startingLocRef.selectedPlaces[0].longitude;
         const endLat = this.$refs.endingLocRef.selectedPlaces[0].latitude;
         const endLng = this.$refs.endingLocRef.selectedPlaces[0].longitude;
-        console.log(startLat + " " + startLng + " " + endLat + " " + endLng);
         const distance = haversineDistance(startLat, startLng, endLat, endLng);
         const midpoint = calculateMiddlePoint(
           startLat,
