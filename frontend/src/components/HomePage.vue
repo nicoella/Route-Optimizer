@@ -51,6 +51,7 @@
               ref="destinationNameRef"
               :title="''"
               :content="destinationName"
+              :isSearch="false"
               :canSearch="true"
               @update:content="updateValue($event, 'destinationName')"
             />
@@ -88,7 +89,11 @@
       <div class="right">
         <h2>Please reload the page to load the map.</h2>
         <div ref="mapContainer" class="map-container">
-          <div ref="map" style="width: 100%; height: 100%"></div>
+          <div
+            id="map_canvas"
+            ref="map"
+            style="width: 100%; height: 100%"
+          ></div>
         </div>
       </div>
     </div>
@@ -96,9 +101,11 @@
 </template>
 
 <script>
+/* eslint-disable */
 import InputField from "./InputField.vue";
 import DestinationItem from "./DestinationItem.vue";
 import config from "../../config.json";
+import { haversineDistance, calculateMiddlePoint } from "./utils.js";
 
 export default {
   name: "HomePage",
@@ -114,6 +121,9 @@ export default {
       endingLocation: "Search",
       destinationName: "Destination Name",
       destinationSearch: "Search Potential Locations",
+      markers: [],
+      markerPositions: [],
+      map: Object,
       destinations: [
         {
           id: 0,
@@ -159,7 +169,7 @@ export default {
       }
       const mapContainer = this.$refs.mapContainer;
 
-      new window.google.maps.Map(mapContainer, {
+      this.map = new window.google.maps.Map(mapContainer, {
         center: { lat: -34.397, lng: 150.644 },
         zoom: 8,
       });
@@ -172,7 +182,7 @@ export default {
         typeof window.google.maps === "undefined"
       ) {
         const script = document.createElement("script");
-        script.src = `https://maps.googleapis.com/maps/api/js?key=${this.getApiKey()}&callback=initMap`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${this.getApiKey()}&callback=initMap&libraries=places`;
         script.defer = true;
         script.async = false;
         script.onerror = () => {
@@ -180,6 +190,26 @@ export default {
         };
         document.head.appendChild(script);
       }
+    },
+    addMarkers(places) {
+      places.forEach((placeInfo) => {
+        console.log(placeInfo);
+        const position = { lat: placeInfo.lat, lng: placeInfo.lng };
+        const marker = new window.google.maps.Marker({
+          position: position,
+          map: this.map,
+          title: placeInfo.name,
+        });
+        this.markers.push({ marker: marker });
+        this.markerPositions.push(position);
+      });
+      const bounds = new window.google.maps.LatLngBounds();
+      this.markerPositions.forEach((position) => {
+        bounds.extend(
+          new window.google.maps.LatLng(position.lat, position.lng)
+        );
+      });
+      this.map.fitBounds(bounds);
     },
     calculateClick() {},
     clearClick() {
@@ -189,6 +219,7 @@ export default {
       this.$refs.destinationSearchRef.clear();
     },
     addDestination() {
+      if (Object.keys(this.newDestination).length === 0) return;
       this.destinations.push({
         id: this.destinations.length,
         name: this.destinationName,
@@ -200,9 +231,37 @@ export default {
     cancelDestination() {
       this.$refs.destinationNameRef.clear();
       this.$refs.destinationSearchRef.clear();
-      this.newDestination = [];
+      this.$refs.destinationNameRef.contentVal = "Destination Name";
+      this.$refs.destinationSearchRef.contentVal = "Search Potential Locations";
+      this.newDestination = {};
     },
     updateSelected() {
+      if (this.$refs.startingLocRef.placeSelected && !this.markers[0]) {
+        this.addMarkers([
+          {
+            name: this.$refs.startingLocRef.selectedPlaces[0].name,
+            lat: this.$refs.startingLocRef.selectedPlaces[0].latitude,
+            lng: this.$refs.startingLocRef.selectedPlaces[0].longitude,
+          },
+        ]);
+        console.log("add start marker");
+      } else if (!this.$refs.startingLocRef.placeSelected && this.markers[0]) {
+        //this.markers[0].setMap(null);
+        //this.markers.splice(index, 0);
+      }
+      if (this.$refs.endingLocRef.placeSelected && !this.markers[1]) {
+        this.addMarkers([
+          {
+            name: this.$refs.endingLocRef.selectedPlaces[0].name,
+            lat: this.$refs.endingLocRef.selectedPlaces[0].latitude,
+            lng: this.$refs.endingLocRef.selectedPlaces[0].longitude,
+          },
+        ]);
+        console.log("add end marker");
+      } else if (!this.$refs.endingLocRef.placeSelected && this.markers[1]) {
+        //this.markers[1].setMap(null);
+        //this.markers.splice(index, 1);
+      }
       if (
         this.$refs.startingLocRef.placeSelected &&
         this.$refs.endingLocRef.placeSelected
@@ -211,10 +270,23 @@ export default {
         this.$refs.destinationSearchRef.errorVal = "";
         const startLat = this.$refs.startingLocRef.selectedPlaces[0].latitude;
         const startLng = this.$refs.startingLocRef.selectedPlaces[0].longitude;
-        const endLat = this.$refs.startingLocRef.selectedPlaces[0].latitude;
-        const endLng = this.$refs.startingLocRef.selectedPlaces[0].longitude;
+        const endLat = this.$refs.endingLocRef.selectedPlaces[0].latitude;
+        const endLng = this.$refs.endingLocRef.selectedPlaces[0].longitude;
         console.log(startLat + " " + startLng + " " + endLat + " " + endLng);
-        // update coords & radius from calculations here
+        const distance = haversineDistance(startLat, startLng, endLat, endLng);
+        const midpoint = calculateMiddlePoint(
+          startLat,
+          startLng,
+          endLat,
+          endLng
+        );
+
+        let radius = 100000;
+        if (distance != 0) {
+          radius = distance * 2;
+        }
+        this.$refs.destinationSearchRef.midpoint = midpoint;
+        this.$refs.destinationSearchRef.radius = radius;
       } else {
         this.$refs.destinationSearchRef.canSearchVal = false;
         this.$refs.destinationSearchRef.errorVal =

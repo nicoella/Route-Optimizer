@@ -18,6 +18,7 @@
         v-if="isSearchVal"
         :searchText="contentVal"
         @update:content="updateValue"
+        @update:selected="updatePlaceSelected"
         :type="title == '' ? 'text_search' : 'find_place'"
       />
       <font-awesome-icon
@@ -59,7 +60,7 @@ export default {
       errorVal: this.error ? this.error : "",
       placeSelected: false,
       selectedPlaces: [],
-      coords: "&latitude=X&longitude=X",
+      midpoint: {},
       radius: 1000,
     };
   },
@@ -76,10 +77,12 @@ export default {
     searchContent() {
       if (this.isSearchVal && this.contentVal != this.prevSearch) {
         if (this.title == "") {
+          console.log(this.midpoint);
+          console.log(this.radius);
           this.$refs.dropdown.searchPlaces(
             {
               query: this.contentVal,
-              coords: this.coords,
+              midpoint: this.midpoint,
               radius: this.radius,
             },
             "text_search"
@@ -105,7 +108,9 @@ export default {
       this.$emit("update:content", this.contentVal);
     },
     handleContentFocus() {
-      this.$refs.dropdown.is_open = true;
+      if (this.isSearchVal) {
+        this.$refs.dropdown.is_open = true;
+      }
       if (this.firstClick) {
         this.contentVal = "";
         this.firstClick = false;
@@ -124,7 +129,7 @@ export default {
       this.updatePlaceSelected();
     },
     handleContentBlur() {
-      if (this.$refs.dropdown) {
+      if (this.$refs.dropdown && this.isSearchVal) {
         this.$refs.dropdown.is_open = false;
       }
     },

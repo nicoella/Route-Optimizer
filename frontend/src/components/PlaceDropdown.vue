@@ -5,23 +5,27 @@
     v-if="places.length > 0"
     @click.stop=""
   >
-    <li
-      v-for="place in places"
-      :key="place.id"
-      @click="select_place(place.id)"
-      :class="{ selected: place.selected }"
-    >
-      <div class="name">{{ place.name }}</div>
-      <div class="address">
-        {{ place.address }}
-      </div>
-    </li>
+    <ul>
+      <li
+        v-for="place in places"
+        :key="place.id"
+        @click="select_place(place.id)"
+        :class="{ selected: place.selected }"
+      >
+        <div class="name">{{ place.name }}</div>
+        <div class="address">
+          {{ place.address }}
+        </div>
+      </li>
+    </ul>
   </div>
 </template>
 
 <script>
+/* eslint-disable */
 import config from "../../config.json";
 import axios from "axios";
+import { haversineDistance, calculateMiddlePoint } from "./utils.js";
 
 export default {
   name: "PlaceDropdown",
@@ -43,6 +47,10 @@ export default {
     },
     searchPlaces(input) {
       if (this.cur_query == input.query) return;
+      this.placeSelected = false;
+      this.selectedPlaces = [];
+      this.cur_query = input.query;
+      this.$emit("update:selected", 0);
       let key = "";
       if (this.type == "find_place") {
         key =
@@ -74,23 +82,36 @@ export default {
             console.error(error);
           });
       } else if (this.type == "text_search") {
+        console.log("hello?? ");
+        console.log(input.midpoint);
         key =
           "/api/text_search?query=" +
           input.query +
-          input.coords +
+          "&latitude=" +
+          input.midpoint.latitude +
+          "&longitude=" +
+          input.midpoint.longitude +
           "&radius=" +
           input.radius +
           "&api_key=" +
           this.getApiKey();
+        console.log(key);
         axios
           .get(key)
           .then((response) => {
             if (response.data.status == "OK") {
               this.is_open = true;
               this.places = [];
+
               for (let result of response.data.results) {
                 this.places.push({
                   id: this.places.length,
+                  distance: haversineDistance(
+                    input.midpoint.latitude,
+                    input.midpoint.longitude,
+                    result.geometry.location.lat,
+                    result.geometry.location.lng
+                  ),
                   name: result.name,
                   address: result.formatted_address,
                   latitude: result.geometry.location.lat,
@@ -98,6 +119,12 @@ export default {
                   selected: false,
                 });
               }
+              console.log(this.places);
+              this.places.sort((a, b) => a.distance - b.distance);
+              this.places.forEach((place, index) => {
+                place.id = index;
+              });
+              console.log(this.places);
             } else {
               this.places = [];
             }
