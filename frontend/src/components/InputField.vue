@@ -1,13 +1,14 @@
 <template>
   <div class="input-field">
     <h2 v-if="titleVal != ''">{{ titleVal }}</h2>
-    <div class="input-bar">
+    <div class="input-bar" v-click-outside="handleContentBlur" tabindex="0">
       <input
         ref="inputField"
         type="text"
         v-model="contentVal"
         @focus="handleContentFocus"
         @input="handleContentChange"
+        :disabled="!canSearchVal"
         :style="{
           'padding-right': isSearchVal ? '20px' : '5px',
         }"
@@ -16,6 +17,8 @@
         ref="dropdown"
         v-if="isSearchVal"
         :searchText="contentVal"
+        @update:content="updateValue"
+        :type="title == '' ? 'text_search' : 'find_place'"
       />
       <font-awesome-icon
         v-if="isSearch"
@@ -23,6 +26,7 @@
         icon="fa-solid fa-magnifying-glass"
       />
     </div>
+    <p class="error" v-if="errorVal != ''">{{ errorVal }}</p>
   </div>
 </template>
 
@@ -40,6 +44,8 @@ export default {
     title: String,
     content: String,
     isSearch: Boolean,
+    canSearch: Boolean,
+    error: String,
   },
 
   data() {
@@ -48,6 +54,13 @@ export default {
       contentVal: this.content,
       isSearchVal: this.isSearch,
       firstClick: true,
+      prevSearch: "",
+      canSearchVal: this.canSearch,
+      errorVal: this.error ? this.error : "",
+      placeSelected: false,
+      selectedPlaces: [],
+      coords: "&latitude=X&longitude=X",
+      radius: 1000,
     };
   },
 
@@ -60,17 +73,45 @@ export default {
         inputField.style.color = "var(--grey-light)";
       }
     },
+    searchContent() {
+      if (this.isSearchVal && this.contentVal != this.prevSearch) {
+        if (this.title == "") {
+          this.$refs.dropdown.searchPlaces(
+            {
+              query: this.contentVal,
+              coords: this.coords,
+              radius: this.radius,
+            },
+            "text_search"
+          );
+          this.prevSearch = this.contentVal;
+        } else {
+          this.$refs.dropdown.searchPlaces(
+            { query: this.contentVal },
+            "find_place"
+          );
+          this.prevSearch = this.contentVal;
+        }
+      }
+    },
+    updatePlaceSelected() {
+      this.placeSelected = this.$refs.dropdown.placeSelected;
+      this.selectedPlaces = this.$refs.dropdown.selectedPlaces;
+      this.$emit("update:selected", this.placeSelected);
+    },
     handleContentChange() {
-      this.$emit("update:content", this.contentVal);
+      this.updatePlaceSelected();
       this.updateTextColour();
+      this.$emit("update:content", this.contentVal);
     },
     handleContentFocus() {
+      this.$refs.dropdown.is_open = true;
       if (this.firstClick) {
         this.contentVal = "";
         this.firstClick = false;
       }
+      setInterval(this.searchContent, 1000);
       this.updateTextColour();
-      this.$refs.dropdown.searchPlaces(this.contentVal);
     },
     clear() {
       this.firstClick = true;
@@ -78,10 +119,14 @@ export default {
       this.$emit("update:content", this.contentVal);
       this.updateTextColour();
     },
-    handlePlaceSelection(place) {
-      this.contentVal = place.name;
-      this.$emit("update:content", this.contentVal);
-      this.firstClick = false;
+    updateValue(event) {
+      this.contentVal = this.$refs.dropdown.places[event].name;
+      this.updatePlaceSelected();
+    },
+    handleContentBlur() {
+      if (this.$refs.dropdown) {
+        this.$refs.dropdown.is_open = false;
+      }
     },
   },
 };

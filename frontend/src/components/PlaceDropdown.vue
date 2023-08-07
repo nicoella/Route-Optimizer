@@ -1,21 +1,40 @@
 <template>
-  <div class="place-dropdown" v-show="isOpen">
-    <!-- Add your dropdown list content here -->
+  <div
+    class="place-dropdown"
+    v-show="is_open"
+    v-if="places.length > 0"
+    @click.stop=""
+  >
+    <li
+      v-for="place in places"
+      :key="place.id"
+      @click="select_place(place.id)"
+      :class="{ selected: place.selected }"
+    >
+      <div class="name">{{ place.name }}</div>
+      <div class="address">
+        {{ place.address }}
+      </div>
+    </li>
   </div>
 </template>
 
 <script>
 import config from "../../config.json";
+import axios from "axios";
 
 export default {
   name: "PlaceDropdown",
   props: {
-    searchText: String,
+    type: String,
   },
   data() {
     return {
-      isOpen: false,
+      is_open: false,
       places: [],
+      placeSelected: false,
+      selectedPlaces: [],
+      cur_query: "",
     };
   },
   methods: {
@@ -23,40 +42,92 @@ export default {
       return config["API_KEY"];
     },
     searchPlaces(input) {
-      console.log("searchPlaces: " + input);
-      const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${input}&key=${this.getApiKey()}`;
-      fetch(url)
-        .then((response) => response.json())
-        .then((data) => {
-          const results = data.results;
-          const resultList = document.getElementById("results");
-
-          resultList.innerHTML = ""; // Clear previous results
-
-          results.forEach((result) => {
-            console.log(result);
+      if (this.cur_query == input.query) return;
+      let key = "";
+      if (this.type == "find_place") {
+        key =
+          "/api/find_place?query=" +
+          input.query +
+          "&api_key=" +
+          this.getApiKey();
+        axios
+          .get(key)
+          .then((response) => {
+            if (response.data.status == "OK") {
+              this.is_open = true;
+              this.places = [];
+              for (let candidate of response.data.candidates) {
+                this.places.push({
+                  id: this.places.length,
+                  name: candidate.name,
+                  address: candidate.formatted_address,
+                  latitude: candidate.geometry.location.lat,
+                  longitude: candidate.geometry.location.lng,
+                  selected: false,
+                });
+              }
+            } else {
+              this.places = [];
+            }
+          })
+          .catch((error) => {
+            console.error(error);
           });
-          /*
-          results.forEach((result) => {
-            const li = document.createElement("li");
-            li.textContent = result.name;
-            resultList.appendChild(li);
+      } else if (this.type == "text_search") {
+        key =
+          "/api/text_search?query=" +
+          input.query +
+          input.coords +
+          "&radius=" +
+          input.radius +
+          "&api_key=" +
+          this.getApiKey();
+        axios
+          .get(key)
+          .then((response) => {
+            if (response.data.status == "OK") {
+              this.is_open = true;
+              this.places = [];
+              for (let result of response.data.results) {
+                this.places.push({
+                  id: this.places.length,
+                  name: result.name,
+                  address: result.formatted_address,
+                  latitude: result.geometry.location.lat,
+                  longitude: result.geometry.location.lng,
+                  selected: false,
+                });
+              }
+            } else {
+              this.places = [];
+            }
+          })
+          .catch((error) => {
+            console.error(error);
           });
-          */
-        })
-        .catch((error) => {
-          console.error("Error fetching data:", error);
-        });
+      }
     },
-    selectPlace(place) {
-      // Handle the selection of a place from the dropdown list.
-      // You can emit an event to pass the selected place to the parent component (InputField).
-      this.$emit("selectPlace", place);
+    select_place(id) {
+      this.places[id].selected = !this.places[id].selected;
+      if (this.type == "find_place" && this.places[id].selected) {
+        this.placeSelected = true;
+        this.selectedPlaces.push({
+          name: this.places[id].name,
+          address: this.places[id].address,
+          latitude: this.places[id].latitude,
+          longitude: this.places[id].longitude,
+        });
+      } else {
+        this.placeSelected = false;
+        this.selectedPlaces = [];
+      }
+      this.cur_query = this.places[id].name;
+      this.$emit("update:content", id);
     },
   },
 };
 </script>
 
 <style lang="scss">
-/* Add your styles for the dropdown list here */
+@import "./PlaceDropdown.scss";
 </style>

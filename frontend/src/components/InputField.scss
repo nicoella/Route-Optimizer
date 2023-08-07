@@ -4,11 +4,19 @@
   align-items: flex-start;
   width: calc(100% - 10px);
   margin-right: 10px;
+  position: relative;
+  z-index: 100;
+
+  .error {
+    color: #2b2b2b;
+    font-size: 8px;
+  }
 }
 
 .input-bar {
   display: flex;
   width: 100%;
+  position: relative;
 
   input {
     height: 22px;
@@ -23,7 +31,7 @@
 
   .search-icon {
     color: var(--grey-med);
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     transform: translateX(-150%) translateY(55%);
   }
 }

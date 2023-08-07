@@ -21,14 +21,18 @@
             :title="'Starting Location'"
             :content="startingLocation"
             :isSearch="true"
+            :canSearch="true"
             @update:content="updateValue($event, 'startingLocation')"
+            @update:selected="updateSelected"
           />
           <input-field
             ref="endingLocRef"
             :title="'Ending Location'"
             :content="endingLocation"
             :isSearch="true"
+            :canSearch="true"
             @update:content="updateValue($event, 'endingLocation')"
+            @update:selected="updateSelected"
           />
         </div>
         <div class="destinations">
@@ -47,6 +51,7 @@
               ref="destinationNameRef"
               :title="''"
               :content="destinationName"
+              :canSearch="true"
               @update:content="updateValue($event, 'destinationName')"
             />
             <input-field
@@ -54,6 +59,8 @@
               :title="''"
               :content="destinationSearch"
               :isSearch="true"
+              :canSearch="false"
+              :error="'Please select starting and ending location first.'"
               @update:content="updateValue($event, 'destinationSearch')"
             />
           </div>
@@ -194,6 +201,25 @@ export default {
       this.$refs.destinationNameRef.clear();
       this.$refs.destinationSearchRef.clear();
       this.newDestination = [];
+    },
+    updateSelected() {
+      if (
+        this.$refs.startingLocRef.placeSelected &&
+        this.$refs.endingLocRef.placeSelected
+      ) {
+        this.$refs.destinationSearchRef.canSearchVal = true;
+        this.$refs.destinationSearchRef.errorVal = "";
+        const startLat = this.$refs.startingLocRef.selectedPlaces[0].latitude;
+        const startLng = this.$refs.startingLocRef.selectedPlaces[0].longitude;
+        const endLat = this.$refs.startingLocRef.selectedPlaces[0].latitude;
+        const endLng = this.$refs.startingLocRef.selectedPlaces[0].longitude;
+        console.log(startLat + " " + startLng + " " + endLat + " " + endLng);
+        // update coords & radius from calculations here
+      } else {
+        this.$refs.destinationSearchRef.canSearchVal = false;
+        this.$refs.destinationSearchRef.errorVal =
+          "Please select starting and ending location first.";
+      }
     },
 
     updateValue(event, topic) {

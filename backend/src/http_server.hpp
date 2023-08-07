@@ -22,7 +22,7 @@ void handle_request(http::request<http::string_body>& req, http::response<http::
             res.body() = "Hello, Boost.Beast!";
             res.prepare_payload();
             return;
-        } else if (path == "/search") { // Google Maps Places API search
+        } else if (path == "/text_search") { // Google Maps Places API text search
             try {
                 if (req.target().find('?') != std::string_view::npos) {
                     // params
@@ -58,7 +58,48 @@ void handle_request(http::request<http::string_body>& req, http::response<http::
                             }
                         }
                     }
-                    std::string result = performGoogleMapsTextSearch(query, latitude, longitude, radius, api_key);
+                    std::string result = text_search(query, latitude, longitude, radius, api_key);
+                    res.result(http::status::ok);
+                    res.set(http::field::content_type, "application/json");
+                    res.content_length(result.size());
+                    res.body() = result;
+
+                    res.prepare_payload();
+                    return;
+                } 
+            }  catch (std::exception const& e) {
+                std::cerr << "Error: " << e.what() << std::endl;
+            }
+            res.result(http::status::ok);
+            res.set(http::field::content_type, "text/plain");
+            res.body() = "{\"status\", \"BAD\"}";
+            res.prepare_payload();
+            return;
+        } else if (path == "/find_place") {
+            try {
+                if (req.target().find('?') != std::string_view::npos) {
+                    // params
+                    std::string api_key = "";
+                    std::string query = "";
+
+                    // parsing
+                    string_view_converter target = req.target();
+                    std::vector<std::string_view> param_pairs = param_parser(target);
+
+                    for (const auto& param_pair : param_pairs) {
+                        size_t equal_pos = param_pair.find('=');
+                        if (equal_pos != std::string_view::npos) {
+                            std::string_view key = param_pair.substr(0, equal_pos);
+                            std::string_view value = param_pair.substr(equal_pos + 1);
+                            
+                            if (key == "query") {
+                                query = value;
+                            } else if (key == "api_key") {
+                                api_key = value;
+                            }
+                        }
+                    }
+                    std::string result = find_place(query, api_key);
                     res.result(http::status::ok);
                     res.set(http::field::content_type, "application/json");
                     res.content_length(result.size());

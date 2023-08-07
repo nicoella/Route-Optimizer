@@ -1,0 +1,30 @@
+.place-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 9999;
+  width: calc(100% - 14px);
+  border: 1px solid #ccc;
+  li {
+    display: block;
+    font-weight: 400;
+    background-color: white;
+    text-align: left;
+    padding: 5px;
+    transition: background-color 0.3s ease;
+
+    .name {
+      color: var(--grey-med);
+      font-size: 12px;
+    }
+    .address {
+      color: var(--grey-light);
+      font-size: 8px;
+    }
+  }
+
+  li:hover,
+  .selected {
+    background-color: #f7f7f7;
+  }
+}
