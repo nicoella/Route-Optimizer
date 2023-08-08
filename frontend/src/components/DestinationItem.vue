@@ -25,7 +25,12 @@ export default {
     };
   },
 
-  methods: {},
+  methods: {
+    update(destination, options) {
+      this.destinationVal = destination;
+      this.optionsVal = options;
+    },
+  },
 };
 </script>
 

@@ -131,20 +131,39 @@ export default {
     },
     select_place(id) {
       this.places[id].selected = !this.places[id].selected;
-      if (this.type == "find_place" && this.places[id].selected) {
-        this.placeSelected = true;
-        this.selectedPlaces.push({
-          name: this.places[id].name,
-          address: this.places[id].address,
-          latitude: this.places[id].latitude,
-          longitude: this.places[id].longitude,
-        });
-      } else {
-        this.placeSelected = false;
-        this.selectedPlaces = [];
+      if (this.type == "find_place") {
+        if (this.places[id].selected) {
+          this.placeSelected = true;
+          this.selectedPlaces.push({
+            name: this.places[id].name,
+            address: this.places[id].address,
+            latitude: this.places[id].latitude,
+            longitude: this.places[id].longitude,
+          });
+        } else {
+          this.placeSelected = false;
+          this.selectedPlaces = [];
+        }
+        this.cur_query = this.places[id].name;
+        this.$emit("update:content", id);
+      } else if (this.type == "text_search") {
+        if (this.places[id].selected) {
+          this.placeSelected = true;
+          this.selectedPlaces.push({
+            objectId: id,
+            name: this.places[id].name,
+            address: this.places[id].address,
+            latitude: this.places[id].latitude,
+            longitude: this.places[id].longitude,
+          });
+        } else {
+          this.selectedPlaces.splice(
+            this.selectedPlaces.findIndex((place) => place.objectId === id),
+            1
+          );
+        }
+        this.$emit("update:selected", id);
       }
-      this.cur_query = this.places[id].name;
-      this.$emit("update:content", id);
     },
   },
 };
