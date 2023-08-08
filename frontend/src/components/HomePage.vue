@@ -37,6 +37,7 @@
         </div>
         <div class="destinations">
           <h2>Destinations</h2>
+
           <destination-item
             :key="dest.id"
             v-for="dest in destinations"
@@ -131,7 +132,6 @@ export default {
       destinationMarkerPositions: [],
       newMarkers: [],
       newMarkerPositions: [],
-      markerPositions: [],
       map: Object,
       destinations: [
         {
@@ -197,7 +197,7 @@ export default {
       const bounds = new window.google.maps.LatLngBounds();
       this.extend(bounds, this.startingMarkerPosition);
       this.extend(bounds, this.endingMarkerPosition);
-      this.extend(bounds, this.markerPositions);
+      this.extend(bounds, this.destinationMarkerPositions);
       this.extend(bounds, this.newMarkerPositions);
       this.map.fitBounds(bounds);
     },
@@ -216,15 +216,19 @@ export default {
     },
     removeMarkers(markers, positionObject) {
       markers.forEach((marker) => {
-        marker.marker.setVisible(false);
-        marker.marker.setMap(null);
-        marker.marker = null;
+        if (marker) {
+          marker.marker.setVisible(false);
+          marker.marker.setMap(null);
+          marker.marker = null;
+        }
       });
       markers.length = 0;
       positionObject.length = 0;
       this.updateFitBounds();
     },
-    calculateClick() {},
+    calculateClick() {
+      console.log(this.destinations);
+    },
     clearClick() {
       this.$refs.startingLocRef.clear();
       this.$refs.endingLocRef.clear();
@@ -260,20 +264,14 @@ export default {
         numLocs: this.newDestination.numLocs,
         locations: this.newDestination.locations,
       });
-      if (this.destinations[0].name == "None") {
-        this.destinations.splice(0, 1);
-      }
-      this.removeMarkers(
+      this.addMarkers(
+        this.newDestination.locations,
         this.destinationMarkers,
         this.destinationMarkerPositions
       );
-      this.destinations.forEach((destination) => {
-        this.addMarkers(
-          destination.locations,
-          this.destinationMarkers,
-          this.destinationMarkerPositions
-        );
-      });
+      if (this.destinations[0].name == "None") {
+        this.destinations.splice(0, 1);
+      }
       this.cancelDestination();
     },
     cancelDestination() {
@@ -286,6 +284,8 @@ export default {
         numLocs: 1,
         locations: [{ id: 0, name: "None" }],
       };
+      this.removeMarkers(this.newMarkers, this.newMarkerPositions);
+      this.updateFitBounds();
     },
     updateSelected() {
       if (

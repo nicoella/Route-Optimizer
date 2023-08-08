@@ -1,10 +1,19 @@
 <template>
   <div class="destination-item">
-    <p>{{ destinationVal }}</p>
+    <div class="left">
+      <p>{{ destinationVal }}</p>
+    </div>
     <div class="list">
-      <li v-for="option in optionsVal" :key="option.id">
-        {{ option.name }}
-      </li>
+      <ul>
+        <li v-for="option in optionsVal" :key="option.id">
+          <div class="name">
+            {{ option.name }}
+          </div>
+          <div class="address">
+            {{ option.address }}
+          </div>
+        </li>
+      </ul>
     </div>
   </div>
 </template>
