@@ -75,16 +75,272 @@
 </template>
 
 <script>
+import InputField from "./InputField.vue";
+import DestinationItem from "./DestinationItem.vue";
+import { haversineDistance, calculateMiddlePoint } from "./utils.js";
+import config from "../../config.json";
+
 export default {
   name: "ManualInput",
+
+  components: {
+    InputField,
+    DestinationItem,
+  },
 
   props: {},
 
   data() {
-    return {};
+    return {
+      startingLocation: "Search",
+      endingLocation: "Search",
+      destinationName: "Destination Name",
+      destinationSearch: "Search Potential Locations",
+      startingMarker: [],
+      startingMarkerPosition: [],
+      endingMarker: [],
+      endingMarkerPosition: [],
+      destinationMarkers: [],
+      destinationMarkerPositions: [],
+      newMarkers: [],
+      newMarkerPositions: [],
+      destinations: [
+        {
+          id: 0,
+          name: "None",
+          numLocs: 0,
+          locations: [],
+        },
+      ],
+      newDestination: {
+        name: "Selected:",
+        numLocs: 1,
+        locations: [{ id: 0, name: "None" }],
+      },
+    };
   },
 
-  methods: {},
+  methods: {
+    getApiKey() {
+      return config["API_KEY"];
+    },
+    calculateClick() {
+      console.log(this.destinations);
+    },
+    clearClick() {
+      this.$refs.startingLocRef.clear();
+      this.$refs.endingLocRef.clear();
+      this.$refs.destinationNameRef.clear();
+      this.$refs.destinationSearchRef.clear();
+      this.$refs.destinationNameRef.contentVal = "Destination Name";
+      this.$refs.destinationSearchRef.contentVal = "Search Potential Locations";
+      this.newDestination = {
+        name: "Selected:",
+        numLocs: 1,
+        locations: [{ id: 0, name: "None" }],
+      };
+      this.destinations = [
+        {
+          id: 0,
+          name: "None",
+          numLocs: 30,
+          locations: [],
+        },
+      ];
+      this.$emit("update:removeMarkers", {
+        markers: this.startingMarker,
+        positionObject: this.startingMarkerPosition,
+      });
+      this.$emit("update:removeMarkers", {
+        markers: this.endingMarker,
+        positionObject: this.endingMarkerPosition,
+      });
+      this.$emit("update:removeMarkers", {
+        markers: this.destinationMarkers,
+        positionObject: this.destinationMarkerPositions,
+      });
+      this.$emit("update:removeMarkers", {
+        markers: this.newMarkers,
+        positionObject: this.newMarkerPositions,
+      });
+      this.updateFitBounds();
+    },
+    updateFitBounds() {
+      this.$emit("update:fitBounds", {
+        startingMarkerPosition: this.startingMarkerPosition,
+        endingMarkerPosition: this.endingMarkerPosition,
+        destinationMarkerPositions: this.destinationMarkerPositions,
+        newMarkerPositions: this.newMarkerPositions,
+      });
+    },
+    addDestination() {
+      if (
+        this.newDestination.locations[0].name == "None" ||
+        this.$refs.destinationNameRef.contentVal == "Destination Name"
+      ) {
+        alert("Please enter a destination name and at least one location.");
+        return;
+      }
+      this.destinations.push({
+        id: this.destinations.length,
+        name: this.destinationName,
+        numLocs: this.newDestination.numLocs,
+        locations: this.newDestination.locations,
+      });
+      this.$emit("update:addMarkers", {
+        places: this.newDestination.locations,
+        markerObject: this.destinationMarkers,
+        positionsObject: this.destinationMarkerPositions,
+      });
+      this.updateFitBounds();
+      if (this.destinations[0].name == "None") {
+        this.destinations.splice(0, 1);
+      }
+      this.cancelDestination();
+    },
+    cancelDestination() {
+      this.$refs.destinationNameRef.clear();
+      this.$refs.destinationSearchRef.clear();
+      this.$refs.destinationNameRef.contentVal = "Destination Name";
+      this.$refs.destinationSearchRef.contentVal = "Search Potential Locations";
+      this.newDestination = {
+        name: "Selected:",
+        numLocs: 1,
+        locations: [{ id: 0, name: "None" }],
+      };
+      this.$emit("update:removeMarkers", {
+        markers: this.newMarkers,
+        positionObject: this.newMarkerPositions,
+      });
+      this.updateFitBounds();
+    },
+    updateSelected() {
+      if (
+        this.$refs.startingLocRef.placeSelected &&
+        this.startingMarker.length == 0
+      ) {
+        this.$emit("update:addMarkers", {
+          places: [
+            {
+              name: this.$refs.startingLocRef.selectedPlaces[0].name,
+              lat: this.$refs.startingLocRef.selectedPlaces[0].latitude,
+              lng: this.$refs.startingLocRef.selectedPlaces[0].longitude,
+            },
+          ],
+          markerObject: this.startingMarker,
+          positionsObject: this.startingMarkerPosition,
+        });
+        this.updateFitBounds();
+      } else if (
+        !this.$refs.startingLocRef.placeSelected &&
+        this.startingMarker.length != 0
+      ) {
+        this.$emit("update:removeMarkers", {
+          markers: this.startingMarker,
+          positionObject: this.startingMarkerPosition,
+        });
+        this.updateFitBounds();
+      }
+      if (
+        this.$refs.endingLocRef.placeSelected &&
+        this.endingMarker.length == 0
+      ) {
+        this.$emit("update:addMarkers", {
+          places: [
+            {
+              name: this.$refs.endingLocRef.selectedPlaces[0].name,
+              lat: this.$refs.endingLocRef.selectedPlaces[0].latitude,
+              lng: this.$refs.endingLocRef.selectedPlaces[0].longitude,
+            },
+          ],
+          markerObject: this.endingMarker,
+          positionsObject: this.endingMarkerPosition,
+        });
+        this.updateFitBounds();
+      } else if (
+        !this.$refs.endingLocRef.placeSelected &&
+        this.endingMarker.length != 0
+      ) {
+        this.$emit("update:removeMarkers", {
+          markers: this.endingMarker,
+          positionObject: this.endingMarkerPosition,
+        });
+        this.updateFitBounds();
+      }
+      if (
+        this.$refs.startingLocRef.placeSelected &&
+        this.$refs.endingLocRef.placeSelected
+      ) {
+        this.$refs.destinationSearchRef.canSearchVal = true;
+        this.$refs.destinationSearchRef.errorVal = "";
+        const startLat = this.$refs.startingLocRef.selectedPlaces[0].latitude;
+        const startLng = this.$refs.startingLocRef.selectedPlaces[0].longitude;
+        const endLat = this.$refs.endingLocRef.selectedPlaces[0].latitude;
+        const endLng = this.$refs.endingLocRef.selectedPlaces[0].longitude;
+        const distance = haversineDistance(startLat, startLng, endLat, endLng);
+        const midpoint = calculateMiddlePoint(
+          startLat,
+          startLng,
+          endLat,
+          endLng
+        );
+
+        let radius = 50000;
+        if (distance != 0) {
+          radius = distance * 2;
+        }
+        this.$refs.destinationSearchRef.midpoint = midpoint;
+        this.$refs.destinationSearchRef.radius = radius;
+      } else {
+        this.$refs.destinationSearchRef.canSearchVal = false;
+        this.$refs.destinationSearchRef.errorVal =
+          "Please select starting and ending location first.";
+      }
+    },
+    updateSelectedLocations() {
+      this.newDestination.name = "Selected:";
+      this.newDestination.locations = [];
+      this.$refs.destinationSearchRef.selectedPlaces.forEach((location) => {
+        this.newDestination.locations.push({
+          id: this.newDestination.locations.length,
+          name: location.name,
+          lat: location.latitude,
+          lng: location.longitude,
+          address: location.address,
+        });
+      });
+      this.$emit("update:removeMarkers", {
+        markers: this.newMarkers,
+        positionObject: this.newMarkerPositions,
+      });
+      this.updateFitBounds();
+      this.$emit("update:addMarkers", {
+        places: this.newDestination.locations,
+        markerObject: this.newMarkers,
+        positionsObject: this.newMarkerPositions,
+      });
+      this.updateFitBounds();
+      if (this.newDestination.locations.length == 0) {
+        this.newDestination.locations.push({ id: 0, name: "None" });
+      }
+      this.newDestination.numLocs = this.newDestination.locations.length;
+      this.$refs.newDestinationRef.update(
+        this.newDestination.name,
+        this.newDestination.locations
+      );
+    },
+    updateValue(event, topic) {
+      if (topic === "startingLocation") {
+        this.startingLocation = event;
+      } else if (topic === "endingLocation") {
+        this.endingLocation = event;
+      } else if (topic === "destinationName") {
+        this.destinationName = event;
+      } else if (topic === "destinationSearch") {
+        this.destinationSearch = event;
+      }
+    },
+  },
 };
 </script>
 

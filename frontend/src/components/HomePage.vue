@@ -15,79 +15,11 @@
 
     <div class="container">
       <div class="left">
-        <div class="endpoints">
-          <input-field
-            ref="startingLocRef"
-            :title="'Starting Location'"
-            :content="startingLocation"
-            :isSearch="true"
-            :canSearch="true"
-            @update:content="updateValue($event, 'startingLocation')"
-            @update:selected="updateSelected"
-          />
-          <input-field
-            ref="endingLocRef"
-            :title="'Ending Location'"
-            :content="endingLocation"
-            :isSearch="true"
-            :canSearch="true"
-            @update:content="updateValue($event, 'endingLocation')"
-            @update:selected="updateSelected"
-          />
-        </div>
-        <div class="destinations">
-          <h2>Destinations</h2>
-
-          <destination-item
-            :key="dest.id"
-            v-for="dest in destinations"
-            :destination="dest.name"
-            :options="dest.locations"
-          />
-        </div>
-        <div class="add">
-          <h2>Add Destination</h2>
-          <div class="add-input">
-            <input-field
-              ref="destinationNameRef"
-              :title="''"
-              :content="destinationName"
-              :isSearch="false"
-              :canSearch="true"
-              @update:content="updateValue($event, 'destinationName')"
-            />
-            <input-field
-              ref="destinationSearchRef"
-              :title="''"
-              :content="destinationSearch"
-              :isSearch="true"
-              :canSearch="false"
-              :error="'Please select starting and ending location first.'"
-              @update:content="updateValue($event, 'destinationSearch')"
-              @update:selected="updateSelectedLocations"
-            />
-          </div>
-          <div class="add-bottom">
-            <destination-item
-              ref="newDestinationRef"
-              v-if="newDestination.name"
-              :destination="newDestination.name"
-              :options="newDestination.locations"
-              :key="newDestination.id"
-            />
-            <div class="add-buttons">
-              <button @click="addDestination" class="add-button">Add</button>
-              <button @click="cancelDestination" class="add-button">
-                Cancel
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div class="buttons">
-          <button @click="clearClick" style="margin-right: 20px">Clear</button>
-          <button @click="calculateClick">Calculate</button>
-        </div>
+        <manual-input
+          @update:fitBounds="updateFitBounds"
+          @update:addMarkers="addMarkers"
+          @update:removeMarkers="removeMarkers"
+        />
       </div>
       <div class="right">
         <h2>Please reload the page to load the map.</h2>
@@ -105,47 +37,19 @@
 
 <script>
 /* eslint-disable */
-import InputField from "./InputField.vue";
-import DestinationItem from "./DestinationItem.vue";
+import ManualInput from "./ManualInput.vue";
 import config from "../../config.json";
-import { haversineDistance, calculateMiddlePoint } from "./utils.js";
 
 export default {
   name: "HomePage",
 
   components: {
-    InputField,
-    DestinationItem,
+    ManualInput,
   },
 
   data() {
     return {
-      startingLocation: "Search",
-      endingLocation: "Search",
-      destinationName: "Destination Name",
-      destinationSearch: "Search Potential Locations",
-      startingMarker: [],
-      startingMarkerPosition: [],
-      endingMarker: [],
-      endingMarkerPosition: [],
-      destinationMarkers: [],
-      destinationMarkerPositions: [],
-      newMarkers: [],
-      newMarkerPositions: [],
       map: Object,
-      destinations: [
-        {
-          id: 0,
-          name: "None",
-          numLocs: 0,
-          locations: [],
-        },
-      ],
-      newDestination: {
-        name: "Selected:",
-        numLocs: 1,
-        locations: [{ id: 0, name: "None" }],
-      },
     };
   },
 
@@ -193,15 +97,22 @@ export default {
         );
       });
     },
-    updateFitBounds() {
+    updateFitBounds(event) {
+      const startingMarkerPosition = event.startingMarkerPosition;
+      const endingMarkerPosition = event.endingMarkerPosition;
+      const destinationMarkerPositions = event.destinationMarkerPositions;
+      const newMarkerPositions = event.newMarkerPositions;
       const bounds = new window.google.maps.LatLngBounds();
-      this.extend(bounds, this.startingMarkerPosition);
-      this.extend(bounds, this.endingMarkerPosition);
-      this.extend(bounds, this.destinationMarkerPositions);
-      this.extend(bounds, this.newMarkerPositions);
+      this.extend(bounds, startingMarkerPosition);
+      this.extend(bounds, endingMarkerPosition);
+      this.extend(bounds, destinationMarkerPositions);
+      this.extend(bounds, newMarkerPositions);
       this.map.fitBounds(bounds);
     },
-    addMarkers(places, markerObject, positionsObject) {
+    addMarkers(event) {
+      const places = event.places;
+      const markerObject = event.markerObject;
+      const positionsObject = event.positionsObject;
       places.forEach((placeInfo) => {
         const position = { lat: placeInfo.lat, lng: placeInfo.lng };
         const marker = new window.google.maps.Marker({
@@ -212,9 +123,10 @@ export default {
         markerObject.push({ marker: marker });
         positionsObject.push(position);
       });
-      this.updateFitBounds();
     },
-    removeMarkers(markers, positionObject) {
+    removeMarkers(event) {
+      const markers = event.markers;
+      const positionObject = event.positionObject;
       markers.forEach((marker) => {
         if (marker) {
           marker.marker.setVisible(false);
@@ -224,179 +136,6 @@ export default {
       });
       markers.length = 0;
       positionObject.length = 0;
-      this.updateFitBounds();
-    },
-    calculateClick() {
-      console.log(this.destinations);
-    },
-    clearClick() {
-      this.$refs.startingLocRef.clear();
-      this.$refs.endingLocRef.clear();
-      this.$refs.destinationNameRef.clear();
-      this.$refs.destinationSearchRef.clear();
-      this.$refs.destinationNameRef.contentVal = "Destination Name";
-      this.$refs.destinationSearchRef.contentVal = "Search Potential Locations";
-      this.newDestination = {
-        name: "Selected:",
-        numLocs: 1,
-        locations: [{ id: 0, name: "None" }],
-      };
-      this.destinations = [
-        {
-          id: 0,
-          name: "None",
-          numLocs: 30,
-          locations: [],
-        },
-      ];
-    },
-    addDestination() {
-      if (
-        this.newDestination.locations[0].name == "None" ||
-        this.$refs.destinationNameRef.contentVal == "Destination Name"
-      ) {
-        alert("Please enter a destination name and at least one location.");
-        return;
-      }
-      this.destinations.push({
-        id: this.destinations.length,
-        name: this.destinationName,
-        numLocs: this.newDestination.numLocs,
-        locations: this.newDestination.locations,
-      });
-      this.addMarkers(
-        this.newDestination.locations,
-        this.destinationMarkers,
-        this.destinationMarkerPositions
-      );
-      if (this.destinations[0].name == "None") {
-        this.destinations.splice(0, 1);
-      }
-      this.cancelDestination();
-    },
-    cancelDestination() {
-      this.$refs.destinationNameRef.clear();
-      this.$refs.destinationSearchRef.clear();
-      this.$refs.destinationNameRef.contentVal = "Destination Name";
-      this.$refs.destinationSearchRef.contentVal = "Search Potential Locations";
-      this.newDestination = {
-        name: "Selected:",
-        numLocs: 1,
-        locations: [{ id: 0, name: "None" }],
-      };
-      this.removeMarkers(this.newMarkers, this.newMarkerPositions);
-      this.updateFitBounds();
-    },
-    updateSelected() {
-      if (
-        this.$refs.startingLocRef.placeSelected &&
-        this.startingMarker.length == 0
-      ) {
-        this.addMarkers(
-          [
-            {
-              name: this.$refs.startingLocRef.selectedPlaces[0].name,
-              lat: this.$refs.startingLocRef.selectedPlaces[0].latitude,
-              lng: this.$refs.startingLocRef.selectedPlaces[0].longitude,
-            },
-          ],
-          this.startingMarker,
-          this.startingMarkerPosition
-        );
-      } else if (
-        !this.$refs.startingLocRef.placeSelected &&
-        this.startingMarker.length != 0
-      ) {
-        this.removeMarkers(this.startingMarker, this.startingMarkerPosition);
-      }
-      if (
-        this.$refs.endingLocRef.placeSelected &&
-        this.endingMarker.length == 0
-      ) {
-        this.addMarkers(
-          [
-            {
-              name: this.$refs.endingLocRef.selectedPlaces[0].name,
-              lat: this.$refs.endingLocRef.selectedPlaces[0].latitude,
-              lng: this.$refs.endingLocRef.selectedPlaces[0].longitude,
-            },
-          ],
-          this.endingMarker,
-          this.endingMarkerPosition
-        );
-      } else if (
-        !this.$refs.endingLocRef.placeSelected &&
-        this.endingMarker.length != 0
-      ) {
-        this.removeMarkers(this.endingMarker, this.endingMarkerPosition);
-      }
-      if (
-        this.$refs.startingLocRef.placeSelected &&
-        this.$refs.endingLocRef.placeSelected
-      ) {
-        this.$refs.destinationSearchRef.canSearchVal = true;
-        this.$refs.destinationSearchRef.errorVal = "";
-        const startLat = this.$refs.startingLocRef.selectedPlaces[0].latitude;
-        const startLng = this.$refs.startingLocRef.selectedPlaces[0].longitude;
-        const endLat = this.$refs.endingLocRef.selectedPlaces[0].latitude;
-        const endLng = this.$refs.endingLocRef.selectedPlaces[0].longitude;
-        const distance = haversineDistance(startLat, startLng, endLat, endLng);
-        const midpoint = calculateMiddlePoint(
-          startLat,
-          startLng,
-          endLat,
-          endLng
-        );
-
-        let radius = 50000;
-        if (distance != 0) {
-          radius = distance * 2;
-        }
-        this.$refs.destinationSearchRef.midpoint = midpoint;
-        this.$refs.destinationSearchRef.radius = radius;
-      } else {
-        this.$refs.destinationSearchRef.canSearchVal = false;
-        this.$refs.destinationSearchRef.errorVal =
-          "Please select starting and ending location first.";
-      }
-    },
-    updateSelectedLocations() {
-      this.newDestination.name = "Selected:";
-      this.newDestination.locations = [];
-      this.$refs.destinationSearchRef.selectedPlaces.forEach((location) => {
-        this.newDestination.locations.push({
-          id: this.newDestination.locations.length,
-          name: location.name,
-          lat: location.latitude,
-          lng: location.longitude,
-          address: location.address,
-        });
-      });
-      this.removeMarkers(this.newMarkers, this.newMarkerPositions);
-      this.addMarkers(
-        this.newDestination.locations,
-        this.newMarkers,
-        this.newMarkerPositions
-      );
-      if (this.newDestination.locations.length == 0) {
-        this.newDestination.locations.push({ id: 0, name: "None" });
-      }
-      this.newDestination.numLocs = this.newDestination.locations.length;
-      this.$refs.newDestinationRef.update(
-        this.newDestination.name,
-        this.newDestination.locations
-      );
-    },
-    updateValue(event, topic) {
-      if (topic === "startingLocation") {
-        this.startingLocation = event;
-      } else if (topic === "endingLocation") {
-        this.endingLocation = event;
-      } else if (topic === "destinationName") {
-        this.destinationName = event;
-      } else if (topic === "destinationSearch") {
-        this.destinationSearch = event;
-      }
     },
   },
 };

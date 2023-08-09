@@ -5,8 +5,11 @@
 #include <cstdlib>
 #include <string>
 #include <sstream>
+#include <vector>
+
 #include "search.hpp"
 #include "utils.hpp"
+#include "held_karp.hpp"
 
 boost::asio::io_context ioc;
 namespace http = boost::beast::http;

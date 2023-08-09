@@ -22,7 +22,7 @@ include_directories(${OPENSSL_INCLUDE})
 file(GLOB BOOST_LIBRARIES ${BOOST_LIBS}/*.a)
 file(GLOB OPENSSL_LIBRARIES ${OPENSSL_LIBS}/*.dylib)
 
-add_executable(server src/main.cpp src/http_server.hpp src/held_karp.cpp src/utils.hpp src/search.hpp src/json.hpp)
+add_executable(server src/main.cpp src/http_server.hpp src/held_karp.hpp src/utils.hpp src/search.hpp src/json.hpp)
 target_link_libraries(server PRIVATE 
   ${BOOST_LIBRARIES}
   ${OPENSSL_LIBRARIES}
