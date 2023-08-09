@@ -27,3 +27,37 @@ std::vector<std::string_view> param_parser(string_view_converter target) {
 
     return param_pairs;
 }
+
+std::vector<std::vector<std::string>> destination_parser(std::string destinations) {
+    std::vector<std::vector<std::string>> data_array;
+
+    std::istringstream iss(destinations);
+    std::string part;
+
+    while (std::getline(iss, part, '%')) {
+        std::istringstream innerIss(part);
+        std::string value;
+        std::vector<std::string> row;
+
+        while (std::getline(innerIss, value, ',')) {
+            row.push_back(value);
+        }
+
+        data_array.push_back(row);
+    }
+
+    return data_array;
+}
+
+std::vector<int> group_count_parser(std::string group_count) {
+    std::vector<int> numbers;
+
+    std::istringstream iss(group_count);
+    std::string part;
+
+    while (std::getline(iss, part, ',')) {
+        numbers.push_back(std::stoi(part));
+    }
+
+    return numbers;
+}

@@ -116,12 +116,57 @@ void handle_request(http::request<http::string_body>& req, http::response<http::
             res.body() = "{\"status\", \"BAD\"}";
             res.prepare_payload();
             return;
-        }
-    } else if (req.method() == http::verb::post) { // handle POST requests
-        if (req.target() == "/test") {
+        } else if (path == "/calculate") {
+            try {
+                if (req.target().find('?') != std::string_view::npos) {
+                    // params
+                    std::string api_key = "";
+                    std::string destinations = "";
+                    std::string group_count = "";
+
+                    // parsing
+                    string_view_converter target = req.target();
+                    std::vector<std::string_view> param_pairs = param_parser(target);
+
+                    for (const auto& param_pair : param_pairs) {
+                        size_t equal_pos = param_pair.find('=');
+                        if (equal_pos != std::string_view::npos) {
+                            std::string_view key = param_pair.substr(0, equal_pos);
+                            std::string_view value = param_pair.substr(equal_pos + 1);
+                            
+                            if (key == "api_key") {
+                                api_key = value;
+                            } else if (key == "destinations") {
+                                destinations = value;
+                            } else if (key=="group_count") {
+                                group_count = value;
+                            }
+                        }
+                    }
+                    std::vector<std::vector<std::string>> destination_parsed = destination_parser(destinations);
+                    std::vector<int> group_count_parsed = group_count_parser(group_count);
+
+                    std::pair<int, vector<int> > result = held_karp(group_count_parsed, destination_parsed, api_key);
+
+                    nlohmann::json json_data;
+                    json_data["seconds"] = result.first;
+                    json_data["route"] = result.second;
+
+                    std::string json_data_string = json_data.dump();
+                    res.result(http::status::ok);
+                    res.set(http::field::content_type, "application/json");
+                    res.content_length(json_data_string.size());
+                    res.body() = json_data_string;
+
+                    res.prepare_payload();
+                    return;
+                } 
+            }  catch (std::exception const& e) {
+                std::cerr << "Error: " << e.what() << std::endl;
+            }
             res.result(http::status::ok);
             res.set(http::field::content_type, "text/plain");
-            res.body() = "Hello, Boost.eee!";
+            res.body() = "{\"status\", \"BAD\"}";
             res.prepare_payload();
             return;
         }
