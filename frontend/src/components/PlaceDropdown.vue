@@ -46,7 +46,12 @@ export default {
       return config["API_KEY"];
     },
     searchPlaces(input) {
-      if (this.cur_query == input.query) return;
+      if (
+        this.cur_query == input.query ||
+        input.query == "Search Potential Locations" ||
+        input.query == "Search"
+      )
+        return;
       this.placeSelected = false;
       this.selectedPlaces = [];
       this.cur_query = input.query;

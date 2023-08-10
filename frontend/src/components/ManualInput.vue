@@ -123,6 +123,13 @@ export default {
       return config["API_KEY"];
     },
     calculateClick() {
+      if (
+        this.destinations.length == 0 &&
+        this.destinations[0].name == "None"
+      ) {
+        alert("Please enter at least one destination.");
+        return;
+      }
       this.removeAllMarkers();
       this.$emit("update:destinations", {
         startingPosition: this.startingPosition,
@@ -221,11 +228,14 @@ export default {
       this.$refs.destinationNameRef.clear();
       this.$refs.destinationSearchRef.clear();
       this.$refs.destinationNameRef.contentVal = "Destination Name";
-      this.$refs.destinationSearchRef.contentVal = "Search Potential Locations";
       this.newDestination = {
         name: "Selected:",
         locations: [{ id: 0, name: "None" }],
       };
+      this.$refs.newDestinationRef.update(
+        this.newDestination.name,
+        this.newDestination.locations
+      );
       this.$emit("update:removeMarkers", {
         markers: this.newMarkers,
         positionObject: this.newMarkerPositions,

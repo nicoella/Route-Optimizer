@@ -17,6 +17,7 @@
       <div class="left">
         <manual-input
           v-if="state == 'ManualInput'"
+          ref="manualInputRef"
           @update:fitBounds="updateFitBounds"
           @update:addMarkers="addMarkers"
           @update:removeMarkers="removeMarkers"
@@ -27,6 +28,7 @@
           ref="finalRouteRef"
           @update:fitBounds="updateFitBounds"
           @update:addMarkers="addMarkers"
+          @update:reset="reset"
         />
       </div>
       <div class="right">
@@ -121,7 +123,6 @@ export default {
       this.map.fitBounds(bounds);
     },
     addMarkers(event) {
-      console.log(event.places);
       const places = event.places;
       const markerObject = event.markerObject;
       const positionsObject = event.positionsObject;
@@ -156,6 +157,12 @@ export default {
         this.$refs.finalRouteRef.endingPosition = event.endingPosition;
         this.$refs.finalRouteRef.destinations = event.destinations;
         this.$refs.finalRouteRef.calculate();
+      });
+    },
+    reset() {
+      this.state = "ManualInput";
+      this.$nextTick(() => {
+        this.$refs.manualInputRef.clearClick();
       });
     },
   },

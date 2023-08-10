@@ -13,6 +13,7 @@
         :options="dest.locations"
       />
     </div>
+    <button @click="returnToHome">Return</button>
   </div>
 </template>
 
@@ -45,6 +46,9 @@ export default {
   methods: {
     getApiKey() {
       return config["API_KEY"];
+    },
+    returnToHome() {
+      this.$emit("update:reset");
     },
     updateFitBounds() {
       this.$emit("update:fitBounds", {
