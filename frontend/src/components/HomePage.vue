@@ -82,7 +82,7 @@ export default {
       const mapContainer = this.$refs.mapContainer;
 
       this.map = new window.google.maps.Map(mapContainer, {
-        center: { lat: -34.397, lng: 150.644 },
+        center: { lat: 0, lng: 0 },
         zoom: 8,
       });
 

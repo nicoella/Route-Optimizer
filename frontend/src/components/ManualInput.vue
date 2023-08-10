@@ -34,14 +34,6 @@
       <h2>Add Destination</h2>
       <div class="add-input">
         <input-field
-          ref="destinationNameRef"
-          :title="''"
-          :content="destinationName"
-          :isSearch="false"
-          :canSearch="true"
-          @update:content="updateValue($event, 'destinationName')"
-        />
-        <input-field
           ref="destinationSearchRef"
           :title="''"
           :content="destinationSearch"
@@ -93,7 +85,6 @@ export default {
       startingLocation: "Search",
       endingLocation: "Search",
       startingPosition: {},
-      destinationName: "Destination Name",
       destinationSearch: "Search Potential Locations",
       endingPosition: {},
       startingMarker: [],
@@ -140,9 +131,7 @@ export default {
     clearClick() {
       this.$refs.startingLocRef.clear();
       this.$refs.endingLocRef.clear();
-      this.$refs.destinationNameRef.clear();
       this.$refs.destinationSearchRef.clear();
-      this.$refs.destinationNameRef.contentVal = "Destination Name";
       this.$refs.destinationSearchRef.contentVal = "Search Potential Locations";
       this.newDestination = {
         name: "Selected:",
@@ -201,16 +190,13 @@ export default {
       this.updateFitBounds();
     },
     addDestination() {
-      if (
-        this.newDestination.locations[0].name == "None" ||
-        this.$refs.destinationNameRef.contentVal == "Destination Name"
-      ) {
+      if (this.newDestination.locations[0].name == "None") {
         alert("Please enter a destination name and at least one location.");
         return;
       }
       this.destinations.push({
         id: this.destinations.length,
-        name: this.destinationName,
+        name: this.destinationSearch,
         locations: this.newDestination.locations,
       });
       this.$emit("update:addMarkers", {
@@ -225,9 +211,7 @@ export default {
       this.cancelDestination();
     },
     cancelDestination() {
-      this.$refs.destinationNameRef.clear();
       this.$refs.destinationSearchRef.clear();
-      this.$refs.destinationNameRef.contentVal = "Destination Name";
       this.newDestination = {
         name: "Selected:",
         locations: [{ id: 0, name: "None" }],
@@ -363,8 +347,6 @@ export default {
         this.startingLocation = event;
       } else if (topic === "endingLocation") {
         this.endingLocation = event;
-      } else if (topic === "destinationName") {
-        this.destinationName = event;
       } else if (topic === "destinationSearch") {
         this.destinationSearch = event;
       }
