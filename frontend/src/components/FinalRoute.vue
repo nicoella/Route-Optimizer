@@ -40,6 +40,7 @@ export default {
       places: [],
       placeMarkers: [],
       placeMarkerPositions: [],
+      path: Object,
     };
   },
 
@@ -48,6 +49,11 @@ export default {
       return config["API_KEY"];
     },
     returnToHome() {
+      this.$emit("update:removeMarkers", {
+        markers: this.placeMarkers,
+        positionObject: this.placeMarkerPositions,
+      });
+      this.$emit("update:removeLine", this.path);
       this.$emit("update:reset");
     },
     updateFitBounds() {
@@ -57,6 +63,21 @@ export default {
         destinationMarkerPositions: this.placeMarkerPositions,
         newMarkerPositions: [],
       });
+    },
+    connectMarkers() {
+      const pathCoordinates = this.places.map(
+        (marker) => new window.google.maps.LatLng(marker.lat, marker.lng)
+      );
+
+      this.path = new window.google.maps.Polyline({
+        path: pathCoordinates,
+        geodesic: true,
+        strokeColor: "#FF0000",
+        strokeOpacity: 1.0,
+        strokeWeight: 2,
+      });
+
+      this.$emit("update:setLine", this.path);
     },
     calculate() {
       let node = [this.startingPosition];
@@ -125,6 +146,8 @@ export default {
           positionsObject: this.placeMarkerPositions,
         });
         this.updateFitBounds();
+        this.connectMarkers();
+        return;
       });
     },
   },

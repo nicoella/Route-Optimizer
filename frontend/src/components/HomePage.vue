@@ -29,6 +29,9 @@
           @update:fitBounds="updateFitBounds"
           @update:addMarkers="addMarkers"
           @update:reset="reset"
+          @update:setLine="setLine"
+          @update:removeMarkers="removeMarkers"
+          @update:removeLine="removeLine"
         />
       </div>
       <div class="right">
@@ -150,6 +153,14 @@ export default {
       markers.length = 0;
       positionObject.length = 0;
     },
+    setLine(event) {
+      event.setMap(this.map);
+    },
+    removeLine(event) {
+      event.setVisible(false);
+      event.setMap(null);
+      event = null;
+    },
     updateDestinations(event) {
       this.state = "FinalRoute";
       this.$nextTick(() => {
@@ -161,6 +172,8 @@ export default {
     },
     reset() {
       this.state = "ManualInput";
+      this.mapInitialized = false;
+      this.initMap();
       this.$nextTick(() => {
         this.$refs.manualInputRef.clearClick();
       });
