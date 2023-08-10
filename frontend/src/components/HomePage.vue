@@ -16,9 +16,17 @@
     <div class="container">
       <div class="left">
         <manual-input
+          v-if="state == 'ManualInput'"
           @update:fitBounds="updateFitBounds"
           @update:addMarkers="addMarkers"
           @update:removeMarkers="removeMarkers"
+          @update:destinations="updateDestinations"
+        />
+        <final-route
+          v-if="state == 'FinalRoute'"
+          ref="finalRouteRef"
+          @update:fitBounds="updateFitBounds"
+          @update:addMarkers="addMarkers"
         />
       </div>
       <div class="right">
@@ -38,6 +46,7 @@
 <script>
 /* eslint-disable */
 import ManualInput from "./ManualInput.vue";
+import FinalRoute from "./FinalRoute.vue";
 import config from "../../config.json";
 
 export default {
@@ -45,11 +54,13 @@ export default {
 
   components: {
     ManualInput,
+    FinalRoute,
   },
 
   data() {
     return {
       map: Object,
+      state: "ManualInput",
     };
   },
 
@@ -110,6 +121,7 @@ export default {
       this.map.fitBounds(bounds);
     },
     addMarkers(event) {
+      console.log(event.places);
       const places = event.places;
       const markerObject = event.markerObject;
       const positionsObject = event.positionsObject;
@@ -136,6 +148,15 @@ export default {
       });
       markers.length = 0;
       positionObject.length = 0;
+    },
+    updateDestinations(event) {
+      this.state = "FinalRoute";
+      this.$nextTick(() => {
+        this.$refs.finalRouteRef.startingPosition = event.startingPosition;
+        this.$refs.finalRouteRef.endingPosition = event.endingPosition;
+        this.$refs.finalRouteRef.destinations = event.destinations;
+        this.$refs.finalRouteRef.calculate();
+      });
     },
   },
 };

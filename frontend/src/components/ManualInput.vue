@@ -88,14 +88,14 @@ export default {
     DestinationItem,
   },
 
-  props: {},
-
   data() {
     return {
       startingLocation: "Search",
       endingLocation: "Search",
+      startingPosition: {},
       destinationName: "Destination Name",
       destinationSearch: "Search Potential Locations",
+      endingPosition: {},
       startingMarker: [],
       startingMarkerPosition: [],
       endingMarker: [],
@@ -108,13 +108,11 @@ export default {
         {
           id: 0,
           name: "None",
-          numLocs: 0,
           locations: [],
         },
       ],
       newDestination: {
         name: "Selected:",
-        numLocs: 1,
         locations: [{ id: 0, name: "None" }],
       },
     };
@@ -125,7 +123,12 @@ export default {
       return config["API_KEY"];
     },
     calculateClick() {
-      console.log(this.destinations);
+      this.removeAllMarkers();
+      this.$emit("update:destinations", {
+        startingPosition: this.startingPosition,
+        destinations: this.destinations,
+        endingPosition: this.endingPosition,
+      });
     },
     clearClick() {
       this.$refs.startingLocRef.clear();
@@ -136,14 +139,12 @@ export default {
       this.$refs.destinationSearchRef.contentVal = "Search Potential Locations";
       this.newDestination = {
         name: "Selected:",
-        numLocs: 1,
         locations: [{ id: 0, name: "None" }],
       };
       this.destinations = [
         {
           id: 0,
           name: "None",
-          numLocs: 30,
           locations: [],
         },
       ];
@@ -173,6 +174,25 @@ export default {
         newMarkerPositions: this.newMarkerPositions,
       });
     },
+    removeAllMarkers() {
+      this.$emit("update:removeMarkers", {
+        markers: this.startingMarker,
+        positionObject: this.startingMarkerPosition,
+      });
+      this.$emit("update:removeMarkers", {
+        markers: this.endingMarker,
+        positionObject: this.endingMarkerPosition,
+      });
+      this.$emit("update:removeMarkers", {
+        markers: this.destinationMarkers,
+        positionObject: this.destinationMarkerPositions,
+      });
+      this.$emit("update:removeMarkers", {
+        markers: this.newMarkers,
+        positionObject: this.newMarkerPositions,
+      });
+      this.updateFitBounds();
+    },
     addDestination() {
       if (
         this.newDestination.locations[0].name == "None" ||
@@ -184,7 +204,6 @@ export default {
       this.destinations.push({
         id: this.destinations.length,
         name: this.destinationName,
-        numLocs: this.newDestination.numLocs,
         locations: this.newDestination.locations,
       });
       this.$emit("update:addMarkers", {
@@ -205,7 +224,6 @@ export default {
       this.$refs.destinationSearchRef.contentVal = "Search Potential Locations";
       this.newDestination = {
         name: "Selected:",
-        numLocs: 1,
         locations: [{ id: 0, name: "None" }],
       };
       this.$emit("update:removeMarkers", {
@@ -219,6 +237,7 @@ export default {
         this.$refs.startingLocRef.placeSelected &&
         this.startingMarker.length == 0
       ) {
+        this.startingPosition = this.$refs.startingLocRef.selectedPlaces[0];
         this.$emit("update:addMarkers", {
           places: [
             {
@@ -245,6 +264,7 @@ export default {
         this.$refs.endingLocRef.placeSelected &&
         this.endingMarker.length == 0
       ) {
+        this.endingPosition = this.$refs.endingLocRef.selectedPlaces[0];
         this.$emit("update:addMarkers", {
           places: [
             {
@@ -323,7 +343,6 @@ export default {
       if (this.newDestination.locations.length == 0) {
         this.newDestination.locations.push({ id: 0, name: "None" });
       }
-      this.newDestination.numLocs = this.newDestination.locations.length;
       this.$refs.newDestinationRef.update(
         this.newDestination.name,
         this.newDestination.locations

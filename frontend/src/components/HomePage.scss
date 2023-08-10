@@ -37,40 +37,6 @@ p {
   text-align: center;
 }
 
-.endpoints {
-  display: flex;
-  width: 100%;
-}
-
-.destinations {
-  padding-top: 20px;
-  padding-bottom: 0px;
-}
-
-.add-input {
-  display: flex;
-  width: 100%;
-  margin: 0;
-}
-
-.add-bottom {
-  padding-top: 10px;
-
-  .add-button {
-    margin-top: 10px;
-    float: right;
-    margin-right: 20px;
-  }
-}
-
-.buttons {
-  width: 100%;
-  margin: auto;
-  padding-top: 50px;
-  display: flex;
-  justify-content: center;
-}
-
 .left {
   width: 49%;
 }

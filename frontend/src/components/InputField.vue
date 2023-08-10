@@ -108,7 +108,7 @@ export default {
       this.$emit("update:content", this.contentVal);
     },
     handleContentFocus() {
-      if (this.isSearchVal) {
+      if (this.isSearchVal && this.contentVal != "Search Potential Locations") {
         this.$refs.dropdown.is_open = true;
       }
       if (this.firstClick) {
@@ -129,7 +129,11 @@ export default {
       this.updatePlaceSelected();
     },
     handleContentBlur() {
-      if (this.$refs.dropdown && this.isSearchVal) {
+      if (
+        this.$refs.dropdown &&
+        this.isSearchVal &&
+        this.contentVal != "Search Potential Locations"
+      ) {
         this.$refs.dropdown.is_open = false;
       }
     },
