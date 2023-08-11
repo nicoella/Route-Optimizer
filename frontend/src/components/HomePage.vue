@@ -11,6 +11,9 @@
         destination for each category to stop at, and select potential locations
         for the destination.
       </p>
+      <p>
+        Note: Due to computational limits, please enter less than 20 locations.
+      </p>
     </div>
 
     <div class="container">

@@ -43,38 +43,54 @@ export function haversineDistance(lat1, lon1, lat2, lon2) {
   return distance; // meters
 }
 
-export function distToSegment(x, y, x1, y1, x2, y2) {
-  var A = x - x1;
-  var B = y - y1;
-  var C = x2 - x1;
-  var D = y2 - y1;
+function signedDistanceOnEquator(lat, lat1) {
+  const R = 6371.0 * 1000; // Earth's radius in meters
+
+  lat = degreesToRadians(lat);
+  lat1 = degreesToRadians(lat1);
+
+  const dlat = lat - lat1;
+
+  const signedDistance = R * dlat;
+  return signedDistance;
+}
+
+function addMetersToLatitude(lat, meters) {
+  const earthRadius = 6371000;
+  const radiansPerMeter = 1 / earthRadius;
+
+  const latChangeRadians = meters * radiansPerMeter;
+
+  const newLat = lat + latChangeRadians * (180 / Math.PI);
+
+  return newLat;
+}
+
+export function distToSegment(lat, lon, lat1, lon1, lat2, lon2) {
+  var A = signedDistanceOnEquator(lat, lat1);
+  var B = signedDistanceOnEquator(lon, lon1);
+  var C = signedDistanceOnEquator(lat2, lat1);
+  var D = signedDistanceOnEquator(lon2, lon1);
 
   var dot = A * C + B * D;
   var len_sq = C * C + D * D;
   var param = -1;
-  if (len_sq != 0) param = dot / len_sq;
+  if (len_sq != 0)
+    //in case of 0 length line
+    param = dot / len_sq;
 
   var xx, yy;
 
-  var dx;
-  var dy;
-
   if (param < 0) {
-    xx = x1;
-    yy = y1;
-    dx = x1 - x;
-    dy = y1 - y;
+    xx = lat1;
+    yy = lon1;
   } else if (param > 1) {
-    xx = x2;
-    yy = y2;
-    dx = x2 - xx;
-    dy = y2 - yy;
+    xx = lat2;
+    yy = lon2;
   } else {
-    xx = x1 + param * C;
-    yy = y1 + param * D;
-    dx = x - x;
-    dy = y - y;
+    xx = addMetersToLatitude(lat1, param * C);
+    yy = addMetersToLatitude(lon1, param * D);
   }
 
-  return Math.sqrt(dx * dx + dy * dy);
+  return haversineDistance(lat, lon, xx, yy);
 }

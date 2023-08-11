@@ -5,7 +5,14 @@
       <p>Loading...</p>
     </div>
     <div v-if="state == 'ready'" class="path">
-      <p>The route takes {{ seconds }} seconds.</p>
+      <p>
+        The route takes
+        <span v-if="hours !== 0">{{ hours }} hours, </span>
+        <span v-if="minutes !== 0">{{ minutes }} minutes, </span>
+        <span v-if="hours !== 0 || minutes !== 0">and</span>
+        {{ seconds }} seconds.
+      </p>
+
       <destination-item
         :key="dest.id"
         v-for="dest in finalRoute"
@@ -35,6 +42,8 @@ export default {
       endingPosition: {},
       destinations: [],
       finalRoute: [],
+      hours: 0,
+      minutes: 0,
       seconds: 0,
       state: "calculate",
       places: [],
@@ -110,6 +119,14 @@ export default {
         this.getApiKey();
       axios.get(key).then((response) => {
         this.seconds = response.data.seconds;
+        if (this.seconds > 60) {
+          this.minutes = Math.floor(this.seconds / 60);
+          this.seconds = this.seconds % 60;
+        }
+        if (this.minutes > 60) {
+          this.hours = Math.floor(this.minutes / 60);
+          this.minutes = this.minutes % 60;
+        }
         const route = response.data.route;
         this.finalRoute.push({
           id: 0,

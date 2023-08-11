@@ -107,14 +107,13 @@ export default {
 
               for (let result of response.data.results) {
                 this.places.push({
-                  id: this.places.length,
                   distance: distToSegment(
+                    result.geometry.location.lat,
+                    result.geometry.location.lng,
                     input.startingPosition.latitude,
                     input.startingPosition.longitude,
                     input.endingPosition.latitude,
-                    input.endingPosition.longitude,
-                    result.geometry.location.lat,
-                    result.geometry.location.lng
+                    input.endingPosition.longitude
                   ),
                   name: result.name,
                   address: result.formatted_address,
