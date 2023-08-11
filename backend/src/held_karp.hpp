@@ -4,52 +4,6 @@
 
 using namespace std;
 
-/*
-#define N 11 // number of nodes
-#define G 5 // number of groups
-
-int group_count[G] = { 1, 4, 3, 1, 2 }; // how many nodes per group
-int groups[G][4] = { // nodes in each group
-    { 0 },
-    { 1, 2, 3, 4 },
-    { 5, 6, 7 },
-    { 8 },
-    { 9, 10 },
-};
-int node_group[N] = { 0, 1, 1, 1, 1, 2, 2, 2, 3, 4, 4 }; // group each node is in
-
-int matrix[N][N] = { // sample distance matrix
-    //0   1    2    3    4    5    6    7    8    9    10
-    {0,   200, 120, 110, 150, 130, 190, 230, 10,  30,  200}, // 0
-    {200, 0,   140, 300, 380, 100, 190, 480, 210, 210, 100}, // 1
-    {120, 140, 0,   170, 220, 140, 80,  400, 110, 140, 100}, // 2
-    {110, 300, 170, 0,   120, 220, 220, 200, 80,  100, 230}, // 3
-    {150, 380, 220, 120, 0,   220, 400, 70,  160, 130, 400}, // 4
-    {130, 100, 140, 220, 220, 0,   220, 330, 170, 150, 180}, // 5
-    {190, 190, 80,  220, 400, 220, 0,   480, 190, 210, 110}, // 6
-    {230, 480, 400, 200, 70,  330, 480, 0,   220, 200, 480}, // 7
-    {10,  210, 110, 80,  160, 170, 190, 220, 0,   40,  200}, // 8
-    {30,  210, 140, 100, 130, 150, 210, 200, 40,  0,   210}, // 9
-    {200, 100, 100, 230, 400, 180, 110, 480, 200, 210, 0}, // 10
-}; // expected output: ?
-
-*/
-
-string bin(int decimal) {
-    if (decimal == 0) {
-        return "0";
-    }
-
-    string binary = "";
-    while (decimal > 0) {
-        int remainder = decimal % 2;
-        binary = to_string(remainder) + binary;
-        decimal /= 2;
-    }
-
-    return binary;
-}
-
 // 0: starting node
 // 1 - (N - 1): destinations
 // N: ending node
@@ -165,7 +119,6 @@ pair<int, vector<int> > held_karp(vector<int> group_count, std::vector<std::vect
     int current_mask = shortest_mask;
     int current_group_mask = full_group_mask;
     while (current_node != -1) {
-        cout << bin(current_group_mask) << " " << bin(current_mask) << " " << current_node << endl;
         optimal_path.push_back(current_node);
         int next_node = prev[current_group_mask][current_mask][current_node];
         int next_mask = current_mask ^ (1 << current_node); // remove current_node from current_mask

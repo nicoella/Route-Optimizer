@@ -7,7 +7,7 @@
   >
     <ul>
       <li
-        v-for="place in places"
+        v-for="place in places.slice(0, 20)"
         :key="place.id"
         @click="select_place(place.id)"
         :class="{ selected: place.selected }"
@@ -25,7 +25,7 @@
 /* eslint-disable */
 import config from "../../config.json";
 import axios from "axios";
-import { haversineDistance, calculateMiddlePoint } from "./utils.js";
+import { distToSegment } from "./utils.js";
 
 export default {
   name: "PlaceDropdown",
@@ -108,9 +108,11 @@ export default {
               for (let result of response.data.results) {
                 this.places.push({
                   id: this.places.length,
-                  distance: haversineDistance(
-                    input.midpoint.latitude,
-                    input.midpoint.longitude,
+                  distance: distToSegment(
+                    input.startingPosition.latitude,
+                    input.startingPosition.longitude,
+                    input.endingPosition.latitude,
+                    input.endingPosition.longitude,
                     result.geometry.location.lat,
                     result.geometry.location.lng
                   ),

@@ -62,6 +62,9 @@ export default {
       selectedPlaces: [],
       midpoint: {},
       radius: 1000,
+      startingPosition: {},
+      endingPosition: {},
+      interval: undefined,
     };
   },
 
@@ -75,6 +78,7 @@ export default {
       }
     },
     searchContent() {
+      console.log("?");
       if (this.isSearchVal && this.contentVal != this.prevSearch) {
         if (this.title == "") {
           this.$refs.dropdown.searchPlaces(
@@ -82,6 +86,8 @@ export default {
               query: this.contentVal,
               midpoint: this.midpoint,
               radius: this.radius,
+              startingPosition: this.startingPosition,
+              endingPosition: this.endingPosition,
             },
             "text_search"
           );
@@ -112,7 +118,11 @@ export default {
         this.contentVal = "";
         this.firstClick = false;
       }
-      setInterval(this.searchContent, 1000);
+      if (this.isSearchVal) {
+        this.interval = setInterval(this.searchContent, 1000);
+        this.$refs.dropdown.is_open = true;
+      }
+
       this.updateTextColour();
     },
     clear() {
@@ -133,6 +143,9 @@ export default {
     handleContentBlur() {
       if (this.$refs.dropdown && this.isSearchVal) {
         this.$refs.dropdown.is_open = false;
+      }
+      if (this.isSearchVal && this.interval) {
+        clearInterval(this.interval);
       }
     },
   },

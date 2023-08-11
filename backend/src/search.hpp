@@ -15,7 +15,7 @@ namespace beast = boost::beast;
 std::string text_search(const std::string& query, double latitude, double longitude, int radius, const std::string& api_key) {
     try {
         const std::string host = "maps.googleapis.com";
-        const std::string target = "/maps/api/place/textsearch/json?query=" + query + "&location=" + std::to_string(latitude) + "," + std::to_string(longitude) + "&radius=" + std::to_string(radius) + "&maxResultCount=20&key=" + api_key;
+        const std::string target = "/maps/api/place/textsearch/json?query=" + query + "&location=" + std::to_string(latitude) + "," + std::to_string(longitude) + "&radius=" + std::to_string(radius) + "&key=" + api_key;
 
         net::io_context io_context;
         ssl::context ssl_context(ssl::context::sslv23_client);

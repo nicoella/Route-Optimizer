@@ -285,6 +285,9 @@ export default {
         this.$refs.startingLocRef.placeSelected &&
         this.$refs.endingLocRef.placeSelected
       ) {
+        this.$refs.destinationSearchRef.startingPosition =
+          this.startingPosition;
+        this.$refs.destinationSearchRef.endingPosition = this.endingPosition;
         this.$refs.destinationSearchRef.canSearchVal = true;
         this.$refs.destinationSearchRef.errorVal = "";
         const startLat = this.$refs.startingLocRef.selectedPlaces[0].latitude;
