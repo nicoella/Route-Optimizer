@@ -75,9 +75,9 @@ export function distToSegment(lat, lon, lat1, lon1, lat2, lon2) {
   var dot = A * C + B * D;
   var len_sq = C * C + D * D;
   var param = -1;
-  if (len_sq != 0)
-    //in case of 0 length line
-    param = dot / len_sq;
+  if (lat1 == lat2 && lon1 == lon2)
+    return haversineDistance(lat, lon, lat1, lon1);
+  else param = dot / len_sq;
 
   var xx, yy;
 

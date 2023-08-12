@@ -302,7 +302,7 @@ export default {
           endLng
         );
 
-        let radius = 50000;
+        let radius = 30000;
         if (distance != 0) {
           radius = distance * 2;
         }
